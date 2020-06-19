@@ -6,7 +6,10 @@ Created on Wed Jun 17 16:05:30 2020
 """
 
 import pandas as pd
-import json
+# import json
+
+
+FolderPath='C:/Users/ZuroChang/PythonScript/PTTAutomation/'
 
 class ReadExcel:
     '''
@@ -19,14 +22,30 @@ class ReadExcel:
     Pictures=[]
     Content=[]
     SlideLayout=[]
+    SlideMapping=[]
     
     def __init__(self,ExcelLocation):
         self.Excel=pd.read_excel(ExcelLocation)\
             .sort_values(by='ID').reset_index(drop=True)
         
-        with open('SlideMapping.json','r') as f:
-            self.SlideMapping=json.load(f)
-        
+        # with open('SlideMapping.json','r') as f:
+        #     self.SlideMapping=json.load(f)
+    
+    def GetSlideMapping(self):
+        MappingRef=pd.read_excel(FolderPath+'SlideMapping.xlsx')
+
+        for Template in list(MappingRef['Template'].drop_duplicates()):
+            TemplateMap=MappingRef[MappingRef['Template']==Template].reset_index(drop=True)
+            
+            Mapping=[]
+            for i0 in range(TemplateMap.shape[0]):
+                Mapping.append(
+                    {'Layout':int(TemplateMap['Layout'].iloc[i0])
+                    ,'Code':TemplateMap['Code'].iloc[i0]}
+                )    
+            
+            self.SlideMapping.append({'Template':Template,'Mapping':Mapping})
+    
     def OutputTitle(self):
         '''
         Description:
@@ -96,12 +115,18 @@ class ReadExcel:
                     Layout=entry['Layout']
                     break
                 
-            self.SlideLayout.append({'Template':Template,'SlideLayout':Layout})
+            self.SlideLayout.append(
+                {'Template':Template
+                ,'SlideLayout':Layout
+                ,'ContentBlock':int(Code[2])}
+            )
+            
     def Run(self):
         '''
         Description:
             Return the content for outputing ppt file.
         '''
+        self.GetSlideMapping()
         self.OutputTitle()
         self.OutputPictures()
         self.OutputContent()
@@ -117,4 +142,3 @@ class ReadExcel:
         )
 
 A1=ReadExcel('C:/Users/ZuroChang/PythonScript/PTTAutomation/ReportGSAM_ZuroChang_20181016.xlsx').Run()
-        

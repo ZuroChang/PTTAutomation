@@ -5,8 +5,36 @@ Created on Wed Jun 17 16:16:42 2020
 @author: ZuroChang
 """
 
+import os
+import json
 import pandas as pd
 from pptx import Presentation
+from pptx.util import Pt
+
+def GetPt(width,height,WordNum):
+    WordSize={'FontSize':[32,28,24,20,18,16,14,12,10]
+             ,'Width':[415786,361553,319835,259866,237592,207893,180777,153995]
+             ,'height':[0,0,0,243682,0,0,0,0,162455]
+             }
+    
+    WideCapacity=[width//entry for entry in WordSize['Width']]
+    
+    HeightCapacity=[]
+    for entry in WordSize['height']:
+        if entry:
+            HeightCapacity.append(height//entry)
+        else:
+            HeightCapacity.append(None)
+    
+    for i0 in range(len(HeightCapacity)):
+        if not HeightCapacity[len(HeightCapacity)-i0-1]:
+            HeightCapacity[len(HeightCapacity)-i0-1]=HeightCapacity[len(HeightCapacity)-i0]
+    
+    for i0 in range(len(WordSize['FontSize'])):
+        if WideCapacity[i0]*HeightCapacity[i0]>=WordNum:
+            return(WordSize['FontSize'][i0])
+    
+
 
 PictureFolder='C:/Users/ZuroChang/PythonScript/PTTAutomation/ReportGSAM_ZuroChang_20181016/'
 Import=A1
@@ -22,20 +50,22 @@ Slide=prs.slides.add_slide(prs.slide_layouts[Data['SlideLayout']['SlideLayout']]
 
 def InsertTitle(Shape,Title):
     Shape.text=Title
+    Shape.text_frame.paragraphs[0].font.size = Pt(GetPt(Shape.width,Shape.height,len(Title)))
 
 def InsertContent(Shape,Content):
     Shape.text=Content
-
+    
 def InsertPicture(Shape,Picture):
     Slide.shapes.add_picture(Picture,Shape.left,Shape.top,Shape.width,Shape.height)
 
-count=0
+count=1
 for shape in Slide.placeholders:
     if 'Title'==shape.name[:len('Title')]:
+        # print(shape.height)
         InsertTitle(shape,Data['Title'])
     elif 'Picture'==shape.name[:len('Picture')]:
         if count<=len(Data['Pictures']):
-            InsertPicture(shape,PictureFolder+Data['Pictures'][count]+'.png')
+            InsertPicture(shape,PictureFolder+Data['Pictures'][count-1]+'.png')
             count+=1
     # elif 'Content'==shape.name[:len('Content')]:
     #     InsertContent(shape,Data['Content'])
