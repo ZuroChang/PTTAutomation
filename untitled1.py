@@ -49,17 +49,61 @@ Slide=prs.slides.add_slide(prs.slide_layouts[Data['SlideLayout']['SlideLayout']]
 
 
 
-def InsertTitle(Shape,Title):
+def InsertTitle(Shape,Title,MinPt=18):
     Shape.text=Title
-    Shape.text_frame.paragraphs[0].font.size = Pt(GetPt(Shape.width,Shape.height,len(Title)))
+    Shape.text_frame.paragraphs[0].font.size = \
+        Pt(max(GetPt(Shape.width,Shape.height,len(Title)),MinPt))
 
+def SeparateContent(Content,BlockNum):
+    Level0=[i0 for i0 in range(len(Content)) if Content[i0]['lvl']==0]
+    
+    Quotient,Remainder=divmod(len(Level0),BlockNum)
+    Separation=[Quotient]*BlockNum
+    i0=0
+    while Remainder>0:
+        Separation[i0]+=1
+        Remainder-=1
+    
+    i0=0
+    count=0
+    SubContent=[]
+    SeparationContent=[]
+    for entry in Content:
+        if entry['lvl']==0:
+            count+=1
+        
+        if count<=Separation[i0]:
+            SubContent.append(entry)
+        else:
+            SeparationContent.append(SubContent)
+            SubContent=[entry]
+            count=1
+            i0+=1
+    else:
+        SeparationContent.append(SubContent)
+    
+    return(SeparationContent)
+        
+            
 def InsertContent(Shape,Content):
-    Shape.text=Content
+    text_frame=Shape.text_frame
+        
+    p=text_frame.paragraphs[0]
+    p.text=Content[0]['Text']
+    p.level=Content[0]['lvl']
+
+    for entry in Content[1:]:
+        p=text_frame.add_paragraph()
+        p.text=entry['Text']
+        p.level=entry['lvl']
     
 def InsertPicture(Shape,Picture):
     Slide.shapes.add_picture(Picture,Shape.left,Shape.top,Shape.width,Shape.height)
 
+
+SeparationContent=SeparateContent(Data['Content'],Data['SlideLayout']['ContentBlock'])
 count=1
+i0=0
 for shape in Slide.placeholders:
     if 'Title'==shape.name[:len('Title')]:
         # print(shape.height)
@@ -69,16 +113,18 @@ for shape in Slide.placeholders:
             InsertPicture(shape,PictureFolder+Data['Pictures'][count-1]+'.png')
             count+=1
     elif 'Text'==shape.name[:len('Text')]:
-        text_frame=shape.text_frame
+        InsertContent(shape,SeparationContent[i0])
+        i0+=1
+        # text_frame=shape.text_frame
         
-        p=text_frame.paragraphs[0]
-        p.text=Data['Content'][0]['Text']
-        p.level=Data['Content'][0]['lvl']
+        # p=text_frame.paragraphs[0]
+        # p.text=Data['Content'][0]['Text']
+        # p.level=Data['Content'][0]['lvl']
     
-        for entry in Data['Content'][1:]:
-            p=text_frame.add_paragraph()
-            p.text=entry['Text']
-            p.level=entry['lvl']
+        # for entry in Data['Content'][1:]:
+        #     p=text_frame.add_paragraph()
+        #     p.text=entry['Text']
+        #     p.level=entry['lvl']
             
             
         # InsertContent(shape,Data['Content'])
