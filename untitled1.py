@@ -11,12 +11,13 @@ import pandas as pd
 from pptx import Presentation
 from pptx.util import Pt
 
-def GetPt(width,height,WordNum):
-    WordSize={'FontSize':[32,28,24,20,18,16,14,12,10]
+
+WordSize={'FontSize':[32,28,24,20,18,16,14,12,10]
              ,'Width':[415786,361553,319835,259866,237592,207893,180777,153995]
-             ,'height':[0,0,0,243682,0,0,0,0,162455]
+             ,'height':[633747,506997,422498,362141,362141,316873,281665,253498,162455]
              }
-    
+
+def GetPt(width,height,WordNum):
     WideCapacity=[width//entry for entry in WordSize['Width']]
     
     HeightCapacity=[]
@@ -67,7 +68,20 @@ for shape in Slide.placeholders:
         if count<=len(Data['Pictures']):
             InsertPicture(shape,PictureFolder+Data['Pictures'][count-1]+'.png')
             count+=1
-    # elif 'Content'==shape.name[:len('Content')]:
-    #     InsertContent(shape,Data['Content'])
+    elif 'Text'==shape.name[:len('Text')]:
+        text_frame=shape.text_frame
+        
+        p=text_frame.paragraphs[0]
+        p.text=Data['Content'][0]['Text']
+        p.level=Data['Content'][0]['lvl']
+    
+        for entry in Data['Content'][1:]:
+            p=text_frame.add_paragraph()
+            p.text=entry['Text']
+            p.level=entry['lvl']
+            
+            
+        # InsertContent(shape,Data['Content'])
+    
 
 prs.save('test.pptx')

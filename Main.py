@@ -60,9 +60,9 @@ class ReadExcel:
         '''
         def GetBulletLevel(Bullet):
             Bulletlevel={
-            'lvl1':[str(i) for i in range(1,100)],
-            'lvl2':[chr(i) for i in range(ord('A'),ord('Z'))],
-            'lvl3':[chr(i) for i in range(ord('a'),ord('z'))],
+                0:[str(i) for i in range(1,100)],
+                1:[chr(i) for i in range(ord('A'),ord('Z'))],
+                2:[chr(i) for i in range(ord('a'),ord('z'))],
             }
             
             for key in Bulletlevel.keys():
@@ -84,7 +84,7 @@ class ReadExcel:
                     entryContent.append(
                         {'lvl':GetBulletLevel(Bullet)
                         ,'length':len(Paragraph)
-                        ,'Content':Paragraph}
+                        ,'Text':Paragraph}
                     )
                 
                 self.Content.append(entryContent)
